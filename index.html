@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>WalletRescue — Secure EVM Asset Recovery</title>
+<meta name="description" content="Rescue Dashboard — recover ERC-20 tokens, NFTs and native balance from a compromised EVM wallet using a sponsor wallet that pays the gas." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231f6feb'/%3E%3Cpath d='M16 7l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9v-6z' fill='none' stroke='white' stroke-width='2' stroke-linejoin='round'/%3E%3Ccircle cx='16' cy='15' r='2.2' fill='white'/%3E%3C/svg%3E" />
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <a class="brand" href="?tab=generate">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 32 32" width="32" height="32" role="presentation">
+        <rect width="32" height="32" rx="8" fill="#1f6feb"/>
+        <path d="M16 7l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9v-6z" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>
+        <circle cx="16" cy="14.5" r="2.2" fill="#fff"/>
+        <rect x="15.1" y="15.6" width="1.8" height="3.4" rx="0.9" fill="#fff"/>
+      </svg>
+    </span>
+    <span class="brand-name">WalletRescue</span>
+  </a>
+  <span class="badge">EVM RESCUE TOOLKIT</span>
+</header>
+
+<nav class="tabbar" aria-label="Rescue steps">
+  <button class="tab" data-tab="generate" aria-current="page"><span class="tab-n">1</span> Generate</button>
+  <button class="tab" data-tab="rescue"><span class="tab-n">2</span> Rescue</button>
+  <button class="tab" data-tab="withdraw"><span class="tab-n">3</span> Withdraw</button>
+</nav>
+
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<main id="main">
+  <h1 class="sr-only">Rescue Dashboard - Recover Tokens from Hacked Wallets</h1>
+
+  <!-- ============ GENERATE ============ -->
+  <section class="card" data-panel="generate" hidden>
+    <h2 class="card-title">Sponsor Wallet Generator</h2>
+    <p class="lede">
+      Your compromised wallet has no gas fee and any gas fee sent to it is being swept by the hacker.
+      That is why you need to create this sponsor wallet and send gas fee here. This wallet then pays
+      the gas fee for the rescue operation on behalf of your compromised wallet.
+    </p>
+    <p class="note">Security note: wallet credentials stay in this browser. Use a trusted device and never reuse this sponsor wallet for long-term storage.</p>
+
+    <div class="chainbar">EVM Chains</div>
+
+    <div id="gen-empty" class="empty">
+      <p class="empty-title">No EVM Wallet</p>
+      <button class="btn btn-dark btn-wide" id="btn-generate">Generate EVM Wallet</button>
+    </div>
+
+    <div id="gen-wallet" hidden>
+      <div class="field">
+        <label class="label" for="gen-address">Sponsor address</label>
+        <div class="inputrow">
+          <input class="input mono" id="gen-address" readonly />
+          <button class="copy" data-copy="gen-address" aria-label="Copy sponsor address" title="Copy">⧉</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label" for="gen-pk">Private key</label>
+        <div class="inputrow">
+          <input class="input mono" id="gen-pk" readonly />
+          <button class="copy" data-copy="gen-pk" aria-label="Copy private key" title="Copy">⧉</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label" for="gen-phrase">Seed phrase</label>
+        <div class="inputrow">
+          <input class="input mono" id="gen-phrase" readonly />
+          <button class="copy" data-copy="gen-phrase" aria-label="Copy seed phrase" title="Copy">⧉</button>
+        </div>
+      </div>
+      <div class="btnrow">
+        <button class="btn" id="btn-download">Download</button>
+        <button class="btn" id="btn-regenerate">Generate New</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RESCUE ============ -->
+  <section class="card" data-panel="rescue" hidden>
+    <div id="rescue-chooser">
+      <h2 class="card-title">Choose Rescue Operation</h2>
+      <p class="lede">Select what you need to do with your compromised wallet. If you find any difficulty, click the ⓘ button on each option to learn more.</p>
+      <div class="chipbar">EVM Chains</div>
+
+      <div class="opgrid">
+        <div class="op">
+          <button class="op-main" data-op="claim">
+            <span class="op-title">Claim &amp; Transfer</span>
+            <span class="op-sub">Claim airdrop and instantly transfer to a safe wallet</span>
+          </button>
+          <button class="op-info" data-info="claim" aria-label="About Claim and Transfer">i</button>
+          <p class="op-detail" id="d-claim" hidden>Claims your airdrop and instantly moves the tokens to your safe wallet, all in one transaction so drainers can't steal them first.</p>
+        </div>
+        <div class="op">
+          <button class="op-main" data-op="transfer">
+            <span class="op-title">Transfer Tokens</span>
+            <span class="op-sub">Move ERC-20 tokens to a safe wallet</span>
+          </button>
+          <button class="op-info" data-info="transfer" aria-label="About Transfer Tokens">i</button>
+          <p class="op-detail" id="d-transfer" hidden>Transfer undrained ERC-20 tokens from your compromised wallet to a safe address.</p>
+        </div>
+        <div class="op">
+          <button class="op-main" data-op="nft">
+            <span class="op-title">Rescue NFTs</span>
+            <span class="op-sub">Transfer or mint NFTs from compromised wallet</span>
+          </button>
+          <button class="op-info" data-info="nft" aria-label="About Rescue NFTs">i</button>
+          <p class="op-detail" id="d-nft" hidden>Transfer undrained NFTs or mints new NFTs from compromised wallet and sends them to safe receiver wallet address in single tx.</p>
+        </div>
+        <div class="op">
+          <button class="op-main" data-op="contract">
+            <span class="op-title">Contract Interaction</span>
+            <span class="op-sub">Send transaction without transferring assets</span>
+          </button>
+          <button class="op-info" data-info="contract" aria-label="About Contract Interaction">i</button>
+          <p class="op-detail" id="d-contract" hidden>Sends any transaction to a smart contract without transferring tokens. For example, if you have staked tokens with a cooldown period, you need to send an unstake transaction first. No tokens are received yet, but the cooldown starts. This is perfect for that.</p>
+        </div>
+      </div>
+      <p class="hint">Select a rescue scenario to continue</p>
+    </div>
+
+    <div id="rescue-form" hidden>
+      <div class="formhead">
+        <button class="back" id="btn-back" aria-label="Back to rescue options">←</button>
+        <div>
+          <h2 class="card-title left" id="form-title">Transfer Tokens</h2>
+          <p class="sub" id="form-sub">Move ERC-20 tokens to a safe wallet</p>
+        </div>
+      </div>
+
+      <p class="warn">Review before signing: this build signs each transfer directly from the compromised key, so the compromised wallet needs gas. If it holds none, fund it from the sponsor wallet first (Generate → fund → Withdraw holds the remainder).</p>
+
+      <div id="wallets"></div>
+
+      <button class="btn btn-ghost" id="btn-add-wallet">+ Add Another Wallet</button>
+      <button class="btn btn-dark btn-wide" id="btn-review">Review &amp; Execute (1 wallet)</button>
+      <div id="review" class="review" hidden></div>
+    </div>
+  </section>
+
+  <!-- ============ WITHDRAW ============ -->
+  <section class="card" data-panel="withdraw" hidden>
+    <h2 class="card-title left">Withdraw Dashboard</h2>
+    <p class="sub">Withdraw remaining native tokens from your sponsor wallet</p>
+
+    <div class="chainbar">EVM Chains</div>
+
+    <div class="sponsorbox">
+      <div class="sponsorbox-head">
+        <span class="label">Sponsor wallet</span>
+        <button class="icon-btn" id="btn-refresh" aria-label="Refresh balance" title="Refresh">⟳</button>
+      </div>
+      <input class="input mono" id="wd-address" readonly placeholder="No sponsor wallet yet" />
+      <div class="balrow"><span>Balance</span><strong id="wd-balance">—</strong></div>
+    </div>
+
+    <div class="field">
+      <label class="label" for="wd-network">Network</label>
+      <select class="input" id="wd-network"></select>
+    </div>
+
+    <div class="field">
+      <span class="label" id="wd-fee-label">Fee mode</span>
+      <div class="seg" role="group" aria-labelledby="wd-fee-label">
+        <button class="seg-btn is-on" data-fee="normal">Normal</button>
+        <button class="seg-btn" data-fee="fast">Fast</button>
+        <button class="seg-btn" data-fee="turbo">Turbo</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="label" for="wd-recipient">Recipient address</label>
+      <input class="input mono" id="wd-recipient" placeholder="0x…" autocomplete="off" spellcheck="false" />
+    </div>
+
+    <button class="btn btn-dark btn-wide" id="btn-withdraw" disabled>Withdraw All ETH</button>
+    <p class="hint" id="wd-status"></p>
+  </section>
+</main>
+
+<footer class="foot">© WalletRescue. Built by Luan.</footer>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
